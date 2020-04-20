@@ -25,7 +25,11 @@ import javax.swing.JToolBar;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class Aplicacion extends JFrame implements ActionListener{
-    private JPanel centro;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private JPanel centro;
     JToolBar jtbMainP;
     JButton jbtnNuevo,jbtnGuardar,jbtnAbrir,JbtnSalir,Scan,parser,TreeMode,JTriple;
     static JTextArea textarea1,weadetokens;
@@ -54,25 +58,25 @@ public class Aplicacion extends JFrame implements ActionListener{
     private void BarraHerramientas() {
         //configuracion general
         jtbMainP = new JToolBar();
-	jtbMainP.setFloatable(false);
-	jtbMainP.setToolTipText("Barra De Herramientas Principal");//muestra un globo donde aparrese el nombre  cuando se pone el cursor
-       
-    jbtnAbrir = new JButton("Abrir");
-	jbtnAbrir.addActionListener(this);
-	jbtnAbrir.setToolTipText("Abre Un Archivo Valido");
-	jtbMainP.add(jbtnAbrir);
-    
-	getContentPane().add(jtbMainP,BorderLayout.NORTH);	
+		jtbMainP.setFloatable(false);
+		jtbMainP.setToolTipText("Barra De Herramientas Principal");//muestra un globo donde aparrese el nombre  cuando se pone el cursor
+	       
+	    jbtnAbrir = new JButton("Abrir");
+		jbtnAbrir.addActionListener(this);
+		jbtnAbrir.setToolTipText("Abre Un Archivo Valido");
+		jtbMainP.add(jbtnAbrir);
+	    
+		getContentPane().add(jtbMainP,BorderLayout.NORTH);	
     }
     
     public Aplicacion(){
         super();
-	getContentPane().setLayout(new BorderLayout());
-	setSize(new Dimension(447, 530));
-	setLocationRelativeTo(null);
-	setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	setResizable(true);
-	setTitle("");
+		getContentPane().setLayout(new BorderLayout());
+		setSize(new Dimension(447, 530));
+		setLocationRelativeTo(null);
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setResizable(true);
+		setTitle("");
         BarraHerramientas();
         bueno();
         setVisible(true);

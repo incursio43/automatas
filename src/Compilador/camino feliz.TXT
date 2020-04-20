@@ -1,0 +1,13 @@
+class X1 {
+  int a ; 
+  String x ;
+  boolean b ; 
+{ 
+  a = 41 ; 
+  system.in.readln ( b ) ; 
+  do {
+     b = true ; 
+     until ( b ) ;
+  }
+}
+} <eof> 

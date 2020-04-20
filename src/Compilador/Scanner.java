@@ -19,6 +19,7 @@ public class Scanner {
     //CONSTRUCTOR
     public Scanner(String codigo) {
         tokens = codigo.split("\\s+");
+        System.out.println(tokens);
         lineaNo = 0; //Aun sin implementar...
         k=0;
         token = "";
@@ -78,11 +79,24 @@ public class Scanner {
                 setTipoToken("Integer", b);
             }
         }
+        if(!tokenValido) {
+            if(validaBoolean(token)) {
+                tokenValido = true;
+                setTipoToken("Boolean", b);
+            }
+        }
         
         if(!tokenValido) {
             if(validaFloat(token)) {
                 tokenValido = true;
                 setTipoToken("Float", b);
+            }
+        }
+        
+        if(!tokenValido) {
+            if(validaString(token)) {
+                tokenValido = true;
+                setTipoToken("String", b);
             }
         }
         
@@ -138,10 +152,21 @@ public class Scanner {
         }else {
        	 tokenValido = false;
         }
-   	 return tokenValido;
-   	 
+   	 return tokenValido; 
    }
-   public boolean validaInteger(String t) {
+    
+    public boolean validaString(String t) {
+     	 boolean tokenValido = false;
+     	 t = token;
+     	 if (token.matches("['A'-'Z'] ['a'-'z'].*")){
+              tokenValido = true;
+          }else {
+         	 tokenValido = false;
+          }
+     	 return tokenValido;
+     }
+    
+    public boolean validaInteger(String t) {
   	 boolean tokenValido = false;
   	 t = token;
   	 if (token.matches("^[0-9]+$")){
@@ -150,8 +175,18 @@ public class Scanner {
       	 tokenValido = false;
        }
   	 return tokenValido;
-  	 
   }
+    public boolean validaBoolean(String t) {
+      	 boolean tokenValido = false;
+      	 t = token;
+      	 if(token.matches("true") || token.matches("false")){
+               tokenValido = true;
+           }else {
+          	 tokenValido = false;
+           }
+      	 return tokenValido;
+      	 
+      }
     
     public void setTipoToken(String tipo, boolean b) {
         if(b) {
