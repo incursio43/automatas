@@ -12,9 +12,9 @@ public class Scanner {
     private String[] tokens = null;
     private String tipoToken;
     private String token;
-    private final String[] reservadas = {"Class", "boolean", "int", "float", "until", "do", "system.in.readln", "true", "false"};
-    private final String[] operadores = {"<", "+", "-", "*", "="};
-    private final String[] delimitador = {"(", ")", "{", "}", ";", "'"};
+    private final String[] reservadas = {"Class","boolean","int","float","until","do","system.in.readln","true","false"};
+    private final String[] operadores = {"<","+","-","*","="};
+    private final String[] delimitador = {"(",")","{","}",";","'"};
     
     //CONSTRUCTOR
     public Scanner(String codigo) {
@@ -175,7 +175,7 @@ public class Scanner {
       	 tokenValido = false;
        }
   	 return tokenValido;
-  }
+    }
     public boolean validaBoolean(String t) {
       	 boolean tokenValido = false;
       	 t = token;
@@ -187,6 +187,10 @@ public class Scanner {
       	 return tokenValido;
       	 
       }
+    
+    public boolean isNumeric(String str) {
+        return (str.matches("[+-]?\\d*(\\.\\d+)?") && str.equals("")==false);
+    }
     
     public void setTipoToken(String tipo, boolean b) {
         if(b) {

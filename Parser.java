@@ -1,8 +1,9 @@
 package Compilador;
-
 import javax.swing.JOptionPane;
-import ArbolSintactico.*;
+import javax.swing.table.DefaultTableModel;
 
+import ArbolSintactico.*;
+import Compilador.Aplicacion;
 import java.util.ArrayList;
 import java.util.Vector;
 import org.apache.commons.lang3.ArrayUtils;
@@ -18,7 +19,8 @@ public class Parser {
     private boolean equals = false;
     boolean bandera = false;
     private final Scanner s;
-    private ArrayList<Token> tablaSimbolos = new ArrayList();
+    private static ArrayList<Token> tablaSimbolos = new ArrayList();
+    private ArrayList<String> cuadruples = new ArrayList();
     final int classx = 1, 	//class
     		booleanx = 2, 	//boolean
     		intx = 3, 		//int
@@ -46,7 +48,9 @@ public class Parser {
     @SuppressWarnings("unused")
 	private int tknCode, tokenEsperado;
     private String token, tokenActual, log;
-    private String AsignaA, Asigna;
+    private String AsignaA;
+    private static DefaultTableModel modelotabla;
+    
     public void validaTablaSimbolos(String token, int code) {
     	if(tipo == null && code == 1 || code == 2 || code == 3 || code == 4 || code == 22) {
     		tipo = token;
@@ -63,16 +67,21 @@ public class Parser {
     	}
 
     }
-    /*public void ingresaValor(Token tok, String token) {
-    	if(tok.getNombre()== identificador) {
-    		tok.setValor(token);
-    		tipo = null;
-    		identificador = null;
-    		equals = false;
-    	}
-    }*/
+
     public void impresionTablaSimbolos() {
-    	tablaSimbolos.forEach((n) -> System.out.println(n));
+    	Object columnas[] = {"Tipo","Nombre","Linea","Valor","Global","Local"};
+    	modelotabla = new DefaultTableModel(columnas,0);
+    	for(int i = 0; i<tablaSimbolos.size();i++) {
+    		modelotabla.addRow(new Object[] {
+    				tablaSimbolos.get(i).getTipo(), 
+    				tablaSimbolos.get(i).getNombre(), 
+    				tablaSimbolos.get(i).getLinea(), 
+    				tablaSimbolos.get(i).getValor(), 
+    				tablaSimbolos.get(i).getGlobal(), 
+    				tablaSimbolos.get(i).getLocal()
+    				});	
+    	}
+    	Compilador.Aplicacion.llenadoTabla(modelotabla);
     }
     
     public Parser(String codigo) {  
@@ -85,9 +94,83 @@ public class Parser {
         validaTablaSimbolos(token,tknCode);
         p = P();
         impresionTablaSimbolos();
+        calculaCuadruples();
     }
-    
-    //INICIO DE ANÁLISIS SINTÁCTICO
+    private String CalculaResultado(String operador, String Operando1, String Operando2) {
+    	String valor = "";
+    	switch(operador) {
+		case "+":
+			valor = Integer.toString( Integer.parseInt(Operando1) + Integer.parseInt(Operando2));
+			break;
+		case "-":
+			valor = Integer.toString( Integer.parseInt(Operando1) - Integer.parseInt(Operando2));
+			break;
+		case "*":
+			valor = Integer.toString( Integer.parseInt(Operando1) * Integer.parseInt(Operando2));
+			break;
+		default:
+				
+			break;
+    	}
+    	return valor;
+    }
+    private void calculaCuadruples() {
+		// TODO Auto-generated method stub
+		ArrayList<String> cuadro = cuadruples;
+		ArrayList<String> cuadro2 = new ArrayList();
+		int count = 1;
+		String validaVariable = "";
+		String variable="";
+		System.out.println(cuadro);
+		System.out.println("Cuadruple:  " + cuadro.get(1) + " " + cuadro.get(2) + " "+ cuadro.get(3) + " " +cuadro.get(4) + " " + cuadro.get(5));
+		System.out.println("Operador" + "   " + "O1" + "   " + "O2" + "   " + "Res");
+		while(cuadro.size() > 2) {
+			cuadro2 = new ArrayList();
+			System.out.println(cuadro.get(2) + "          " + cuadro.get(1) + "   " + cuadro.get(3) + "    T"+count);
+			String validador = cuadro.get(2);
+			if(s.isNumeric(cuadro.get(1)) && s.isNumeric(cuadro.get(3))){
+				validaVariable = CalculaResultado(cuadro.get(2),cuadro.get(1),cuadro.get(3));
+				cuadro2.add(cuadro.get(0));
+				cuadro2.add("T"+count);
+				cuadro2.add(cuadro.get(4));
+				cuadro2.add(cuadro.get(5));
+				/*
+					cuadro.set(1,"T"+count);
+					cuadro.remove(2);
+					cuadro.remove(3);
+				*/
+				cuadro = cuadro2;
+			} else {
+				if(cuadro.get(1).equals("T"+(count-1))) {
+					if(s.isNumeric(cuadro.get(3))) {
+						validaVariable = CalculaResultado(cuadro.get(2),validaVariable,cuadro.get(3));
+						cuadro2.add(cuadro.get(0));
+						cuadro2.add("T"+count);
+						cuadro = cuadro2;
+					} else {
+						for(Token tok: tablaSimbolos) {
+			               	if(tok.getNombre().equals(cuadro.get(3))) {
+			           			variable = tok.getValor();
+			           		}
+			           	}
+						if(variable.equals("")) {
+							errorVariableNoDefinida(cuadro.get(3));
+						} else {
+							validaVariable = CalculaResultado(cuadro.get(2),validaVariable,variable);
+							cuadro2.add(cuadro.get(0));
+							cuadro2.add("T"+count);
+							cuadro = cuadro2;
+						}
+					}
+				}
+			}
+			count++;
+		}
+		System.out.println("=          " + cuadro.get(0)+ "          " + cuadro.get(1));
+		System.out.println(cuadruples.get(0) + "= " + validaVariable); 
+	}
+
+	//INICIO DE ANÁLISIS SINTÁCTICO
     public void advance() {
         token = s.getToken(true);
         tknCode = stringToCode(token);
@@ -240,7 +323,6 @@ public class Parser {
 		{
             	Idx i;
             	Expx e3;
-            	System.out.println(token + " " + tknCode);
             	AsignaA = token;
             	boolean flag = false;
             	for(Token tok: tablaSimbolos) {
@@ -295,6 +377,7 @@ public class Parser {
                        	if(tok.getNombre().equals(AsignaA)) {
                    			System.out.println("Es igual pliss");
                    			tok.setValor(token);
+                            
                    		}else {
                            	System.out.println("yametecudasai");
                    		}
@@ -303,71 +386,74 @@ public class Parser {
             		errorValidaEnteros(AsignaA,token);
             	}
             }
-            eat(id); 
-            if(tknCode == menorx) 
+            String valida = token;
+            eat(id);
+            if(tknCode == 14 || tknCode == 11 || tknCode == 12 || tknCode == 13){
+            	cuadruples.add(AsignaA);
+            	cuadruples.add(valida);
+            	//cuadruples.add(token);
+            }
+            if(tknCode == masx) 
             {
-            		eat(menorx);
-                    comp2 = token;
-                    i2 = new Idx(comp2);
-                    eat(id); //(tokenActual)
-                    System.out.println("Operación: " + comp1 + "<" + comp2);
-                    return new Menorx(i1, i2);
-            }  
-            
-            else if(tknCode == masx) 
-            {
+            		cuadruples.add(token);
                     eat(masx);
                     comp2 = token;
-                    i2 = new Idx(comp2);
+                    //i2 = new Idx(comp2);
+                    cuadruples.add(token);
                     eat(id); //(tokenActual)
                     System.out.println("Operación: " + comp1 + "+" + comp2);
                     for(Token tok: tablaSimbolos) {
                        	if(tok.getNombre().equals(AsignaA)) {
-                   			tok.setValor(Integer.toString((Integer.parseInt(comp1) + Integer.parseInt(comp2))));
+                       		String valor = Integer.toString((Integer.parseInt(comp1) + Integer.parseInt(comp2)));
+                   			tok.setValor(valor);
+                   			System.out.println(token + " " + tknCode);
+                   			E2(valor);
                    		}else {
                            	System.out.println("yametecudasai");
                    		}
                    	}
-                    /*if(s.validaInteger(comp1) && s.validaInteger(comp2)) {
-                    	comp1 = Integer.toString((Integer.parseInt(comp1) + Integer.parseInt(comp2)));
-                    	E2(comp1);
-                    }*/
-                    return new Sumax(i1, i2);
-
+                    //return new Sumax(i1, i2);
             }
             else if(tknCode == menosx) 
             {   	
+            		cuadruples.add(token);
                 	eat(menosx);
                     comp2 = token;
-                    i2 = new Idx(comp2);
+                    //i2 = new Idx(comp2);
+                    cuadruples.add(token);
                     eat(id); //(tokenActual)
                     System.out.println("Operación: " + comp1 + "-" + comp2);
                     for(Token tok: tablaSimbolos) {
                        	if(tok.getNombre().equals(AsignaA)) {
-                   			tok.setValor(Integer.toString((Integer.parseInt(comp1) - Integer.parseInt(comp2))));
+                       		String valor = Integer.toString((Integer.parseInt(comp1) - Integer.parseInt(comp2)));
+                   			tok.setValor(valor);
+                   			E2(valor);
                    		}else {
                            	System.out.println("yametecudasai");
                    		}
                    	}
-                    return new Restax(i1, i2);
+                    //return new Restax(i1, i2);
                     
             }
             else if(tknCode == porx)
             {
-                	
+            		cuadruples.add(token);
                 	eat(porx);
                     comp2 = token;
-                    i2 = new Idx(comp2);
+                    //i2 = new Idx(comp2);
+                    cuadruples.add(token);
                     eat(id); //(tokenActual)
                     System.out.println("Operación: " + comp1 + "*" + comp2);
                     for(Token tok: tablaSimbolos) {
                        	if(tok.getNombre().equals(AsignaA)) {
-                   			tok.setValor(Integer.toString((Integer.parseInt(comp1) * Integer.parseInt(comp2))));
+                       		String valor = Integer.toString((Integer.parseInt(comp1) * Integer.parseInt(comp2)));
+                   			tok.setValor(valor);
+                   			E2(valor);
                    		}else {
                            	System.out.println("yametecudasai");
                    		}
                    	}
-                    return new Multix(i1, i2);
+                    //return new Multix(i1, i2);
                      
             }
             return null;
@@ -397,14 +483,103 @@ public class Parser {
            return null;
        } else {
            error(token, "( < | > | + | - | * | / true / false / id / Integer / Float)");
-
            return null;
        }
     }
     
-    /*public Expx E2(){
-    	
-    }*/
+    public Expx E2(String comp1){
+        String comp2 = "";
+        if(tknCode == masx) 
+        {
+        		cuadruples.add(token);
+                eat(masx);
+                if(!s.validaInteger(token)) {
+                	for(Token tok: tablaSimbolos) {
+                		if(tok.getNombre().equals(token) && tok.getTipo().equals("int")) {
+                			comp2 = tok.getValor();
+                		}
+                	}
+                	if(comp2.equals("")) {
+                		errorTipoNoCompatible(token);
+                	}
+                }
+                cuadruples.add(token);
+                eat(id); //(tokenActual)
+                System.out.println("Operación: " + comp1 + "+" + comp2);
+                for(Token tok: tablaSimbolos) {
+                   	if(tok.getNombre().equals(AsignaA)) {
+                   		String valor = Integer.toString((Integer.parseInt(comp1) + Integer.parseInt(comp2)));
+               			tok.setValor(valor);
+                        if(tknCode == masx || tknCode == menosx || tknCode == porx) {
+                        	E2(valor);
+                        }
+               		}else {
+                       	System.out.println("yametecudasai");
+               		}
+               	}
+        }
+        else if(tknCode == menosx) 
+        {   	
+        		cuadruples.add(token);
+            	eat(menosx);
+            	if(!s.validaInteger(token)) {
+                	for(Token tok: tablaSimbolos) {
+                		if(tok.getNombre().equals(token) && tok.getTipo().equals("int")) {
+                			comp2 = tok.getValor();
+                		}
+                	}
+                	if(comp2.equals("")) {
+                		errorTipoNoCompatible(token);
+                	}
+                }
+            	cuadruples.add(token);
+                eat(id); //(tokenActual)
+                System.out.println("Operación: " + comp1 + "-" + comp2);
+                for(Token tok: tablaSimbolos) {
+                   	if(tok.getNombre().equals(AsignaA)) {
+                   		String valor = Integer.toString((Integer.parseInt(comp1) - Integer.parseInt(comp2)));
+               			tok.setValor(valor);
+                        if(tknCode == masx || tknCode == menosx || tknCode == porx) {
+                        	E2(valor);
+                        }
+               		}else {
+                       	System.out.println("yametecudasai");
+               		}
+               	}                
+        }
+        else if(tknCode == porx)
+        { 	
+        		cuadruples.add(token);
+            	eat(porx);
+            	if(!s.validaInteger(token)) {
+                	for(Token tok: tablaSimbolos) {
+                		if(tok.getNombre().equals(token) && tok.getTipo().equals("int")) {
+                			comp2 = tok.getValor();
+                		}
+                	}
+                	if(comp2.equals("")) {
+                		errorTipoNoCompatible(token);
+                	}
+                } else {
+                	comp2= token;
+                }
+            	cuadruples.add(token);
+                eat(id); //(tokenActual)
+                System.out.println("Operación: " + comp1 + "*" + comp2);
+                for(Token tok: tablaSimbolos) {
+                   	if(tok.getNombre().equals(AsignaA)) {
+                   		String valor = Integer.toString((Integer.parseInt(comp1) * Integer.parseInt(comp2)));
+               			tok.setValor(valor);
+                        if(tknCode == masx || tknCode == menosx || tknCode == porx) {
+                        	E2(valor);
+                        }
+               		}else {
+                       	System.out.println("yametecudasai");
+               		}
+               	}              
+        }
+    	return null;
+    }
    
     //FIN DEL ANÁLISIS SINTÁCTICO
     
@@ -431,6 +606,23 @@ public class Parser {
         switch(JOptionPane.showConfirmDialog(null,
                 "Error sintactico:\n"
                         + "La variable:("+ token + ") no esta declarada previamente.\n"
+                        + "¿Desea detener la ejecucion?",
+                "Ha ocurrido un error",
+                JOptionPane.YES_NO_OPTION)) {
+            case JOptionPane.NO_OPTION:
+                int e = (int) 1.1;
+                break;
+                
+            case JOptionPane.YES_OPTION:
+                System.exit(0);
+                break;
+        }
+    }
+    
+    public void errorTipoNoCompatible(String token) {
+        switch(JOptionPane.showConfirmDialog(null,
+                "Error sintactico:\n"
+                        + "La variable:("+ token + ") no coincide con el tipo destino.\n"
                         + "¿Desea detener la ejecucion?",
                 "Ha ocurrido un error",
                 JOptionPane.YES_NO_OPTION)) {
